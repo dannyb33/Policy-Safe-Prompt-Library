@@ -1,0 +1,19 @@
+[
+  {
+    "id": "summarize_email",
+    "description": "Summarizes customer emails",
+    "content": "Please summarize the following text using a {{length}} length:\n\n'{{text}}'",
+    "variables": [
+      { "name": "text", "type": "string", "description": "Email body", "required": true },
+      { "name": "length", "type": "enum", "description": "Summary length", "required": true, "options": ["short", "medium", "long"] }
+    ]
+  },
+  {
+    "id": "polite_reply",
+    "description": "Rewrites text to be polite and professional",
+    "content": "Rewrite the following text to be polite and professional:\n\n'{{text}}'",
+    "variables": [
+      { "name": "text", "type": "string", "description": "Raw text", "required": true }
+    ]
+  }
+]

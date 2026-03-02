@@ -3,7 +3,7 @@ import express from "express";
 const app = express();
 
 app.get("/", (_req, res) => {
-  res.send("Hello World (API) ✅");
+  res.send("Hello World (API)");
 });
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
