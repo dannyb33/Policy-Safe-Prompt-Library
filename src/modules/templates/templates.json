@@ -4,8 +4,23 @@
     "description": "Summarizes customer emails",
     "content": "Please summarize the following text using a {{length}} length:\n\n'{{text}}'",
     "variables": [
-      { "name": "text", "type": "string", "description": "Email body", "required": true },
-      { "name": "length", "type": "enum", "description": "Summary length", "required": true, "options": ["short", "medium", "long"] }
+      {
+        "name": "text",
+        "type": "string",
+        "description": "Email body",
+        "required": true
+      },
+      {
+        "name": "length",
+        "type": "enum",
+        "description": "Summary length",
+        "required": true,
+        "options": [
+          "short",
+          "medium",
+          "long"
+        ]
+      }
     ]
   },
   {
@@ -13,7 +28,63 @@
     "description": "Rewrites text to be polite and professional",
     "content": "Rewrite the following text to be polite and professional:\n\n'{{text}}'",
     "variables": [
-      { "name": "text", "type": "string", "description": "Raw text", "required": true }
+      {
+        "name": "text",
+        "type": "string",
+        "description": "Raw text",
+        "required": true
+      }
     ]
+  },
+  {
+    "id": "ok_enum",
+    "description": "ok",
+    "content": "Hello {{name}} ({{tone}})",
+    "variables": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "type": "enum",
+        "description": "",
+        "required": true,
+        "options": [
+          "formal",
+          "casual"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "versioned_test",
+    "description": "v1",
+    "content": "Hello {{name}}",
+    "variables": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "",
+        "required": true
+      }
+    ]
+  },
+  {
+    "id": "versioned_test",
+    "description": "descripcion nueva sin tocar content",
+    "content": "Hello {{name}}",
+    "variables": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "",
+        "required": true
+      }
+    ],
+    "version": 2,
+    "createdAt": "2026-03-11T08:46:48.081Z"
   }
 ]
