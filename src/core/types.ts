@@ -13,4 +13,6 @@ export interface PromptTemplate { // This is the schema for the templates
   content: string;
   description: string;
   variables: VariableSchema[];
+  version?: number; // version used for the Add template versioning system
+  createdAt?: string; // ISO date string use for the Add template versioning system 
 }
