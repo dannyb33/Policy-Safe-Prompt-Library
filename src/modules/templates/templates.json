@@ -37,29 +37,6 @@
     ]
   },
   {
-    "id": "ok_enum",
-    "description": "ok",
-    "content": "Hello {{name}} ({{tone}})",
-    "variables": [
-      {
-        "name": "name",
-        "type": "string",
-        "description": "",
-        "required": true
-      },
-      {
-        "name": "tone",
-        "type": "enum",
-        "description": "",
-        "required": true,
-        "options": [
-          "formal",
-          "casual"
-        ]
-      }
-    ]
-  },
-  {
     "id": "versioned_test",
     "description": "v1",
     "content": "Hello {{name}}",
