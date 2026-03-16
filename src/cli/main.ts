@@ -1,6 +1,8 @@
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 import { addTemplate, updateTemplate, removeTemplate, patchTemplate } from "../modules/templates/adminTemplateService.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
+import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
+import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 
 function parseArg(flag: string): string | undefined {
@@ -207,6 +209,38 @@ async function cmdAdminList() {
   });
 }
 
+async function cmdPolicyCheck() {
+  const prompt = parseArg("--prompt");
+  if (!prompt) {
+    console.error("[ERROR] Missing --prompt \"<text>\"");
+    console.error("Usage: npm run cli -- policy-check --prompt \"<text>\"");
+    process.exit(1);
+  }
+
+  const rules = getDefaultPolicyRules();
+  const summary = checkPolicies(prompt, rules);
+
+  console.log("> [INFO] Running policy checks...");
+  summary.results.forEach((result) => {
+    console.log(`>   - ${result.name}: ${result.passed ? "PASSED" : "FAILED"}`);
+    if (!result.passed && result.message) {
+      console.log(`>     Reason: ${result.message}`);
+    }
+  });
+
+  if (summary.passed) {
+    console.log("> [OK] Prompt passed policy checks.");
+    return;
+  }
+
+  console.error("> [BLOCKED] Prompt failed policy checks.");
+  if (summary.details.length > 0) {
+    console.error("> Details:");
+    summary.details.forEach((detail) => console.error(`>   • ${detail}`));
+  }
+  process.exit(1);
+}
+
 async function main() {
   const command = process.argv[2];
 
@@ -218,6 +252,7 @@ async function main() {
   if (command === "admin-remove") return cmdAdminRemove();
   if (command === "admin-patch") return cmdAdminPatch();
   if (command === "admin-list") return cmdAdminList();
+  if (command === "policy-check") return cmdPolicyCheck();
 
   console.log("Usage:");
   console.log("  npm run cli -- list");
@@ -228,6 +263,7 @@ async function main() {
   console.log("  npm run cli -- admin-remove <template-id> [--version <n>]");
   console.log("  npm run cli -- admin-patch <template-id> --patch '<json-string>'");
   console.log("  npm run cli -- admin-list [--all]");
+  console.log("  npm run cli -- policy-check --prompt \"<text>\"");
   process.exit(1);
 }
 
