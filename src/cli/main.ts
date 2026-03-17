@@ -37,15 +37,7 @@ async function cmdInfo(id: string) {
   console.log(`> ---------------------------------------------------`);
 }
 
-async function cmdRun(id: string, dataStr: string) {
-  let inputs: Record<string, unknown>;
-  try {
-    inputs = JSON.parse(dataStr) as Record<string, unknown>;
-  } catch {
-    console.error("[ERROR] --data is not valid JSON");
-    process.exit(1);
-  }
-
+async function cmdRun(id: string, inputs: Record<string, unknown>) {
   const engine = new JsonTemplateEngine();
 
   console.log(`> [INFO] Loading template '${id}'...`);
@@ -253,8 +245,21 @@ async function main() {
   program.command('run')
     .description('Render a template with given variables')
     .argument('<template-id>', 'template id')
-    .requiredOption('--data <json-string>', 'variables json string')
-    .action((id, options) => cmdRun(id, options.data));
+    .option('--data <json-string>', 'variables json string')
+    .action((id, options, command) => {
+      if (!id) command.error("Missing template-id");
+      if (!options.data) command.error("Missing --data <json-string>");
+
+      let inputs: Record<string, unknown>;
+      try {
+        inputs = JSON.parse(options.data) as Record<string, unknown>;
+      } catch {
+        command.error("[ERROR] --data is not valid JSON");
+        process.exit(1);
+      }
+
+      cmdRun(id, inputs)
+    });
 
 
   // console.log("Usage:");
