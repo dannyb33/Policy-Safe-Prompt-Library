@@ -4,6 +4,7 @@ import { JsonTemplateEngine } from "../modules/templateEngine.js";
 import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
+import { Command, program } from "commander";
 
 function parseArg(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
@@ -11,14 +12,7 @@ function parseArg(flag: string): string | undefined {
   return process.argv[idx + 1];
 }
 
-async function cmdInfo() {
-  const id = process.argv[3];
-  if (!id) {
-    console.error("[ERROR] Missing <template-id>");
-    console.error("Usage: npm run cli -- info <template-id>");
-    process.exit(1);
-  }
-
+async function cmdInfo(id: string) {
   const engine = new JsonTemplateEngine();
   const template = await engine.getTemplate(id); // throws if not found
 
@@ -43,21 +37,7 @@ async function cmdInfo() {
   console.log(`> ---------------------------------------------------`);
 }
 
-async function cmdRun() {
-  const id = process.argv[3];
-  if (!id) {
-    console.error("[ERROR] Missing <template-id>");
-    console.error("Usage: npm run cli -- run <template-id> --data '<json-string>'");
-    process.exit(1);
-  }
-
-  const dataStr = parseArg("--data");
-  if (!dataStr) {
-    console.error("[ERROR] Missing --data '<json-string>'");
-    console.error("Usage: npm run cli -- run <template-id> --data '<json-string>'");
-    process.exit(1);
-  }
-
+async function cmdRun(id: string, dataStr: string) {
   let inputs: Record<string, unknown>;
   try {
     inputs = JSON.parse(dataStr) as Record<string, unknown>;
@@ -242,29 +222,54 @@ async function cmdPolicyCheck() {
 }
 
 async function main() {
-  const command = process.argv[2];
+  const program = new Command();
 
-  if (command === "list") return cmdList();
-  if (command === "info") return cmdInfo();
-  if (command === "run") return cmdRun(); 
-  if (command === "admin-add") return cmdAdminAdd();
-  if (command === "admin-edit") return cmdAdminEdit();
-  if (command === "admin-remove") return cmdAdminRemove();
-  if (command === "admin-patch") return cmdAdminPatch();
-  if (command === "admin-list") return cmdAdminList();
-  if (command === "policy-check") return cmdPolicyCheck();
+  // if (command === "list") return cmdList();
+  // if (command === "info") return cmdInfo();
+  // if (command === "run") return cmdRun(); 
+  // if (command === "admin-add") return cmdAdminAdd();
+  // if (command === "admin-edit") return cmdAdminEdit();
+  // if (command === "admin-remove") return cmdAdminRemove();
+  // if (command === "admin-patch") return cmdAdminPatch();
+  // if (command === "admin-list") return cmdAdminList();
+  // if (command === "policy-check") return cmdPolicyCheck();
 
-  console.log("Usage:");
-  console.log("  npm run cli -- list");
-  console.log("  npm run cli -- info <template-id>"); 
-  console.log("  npm run cli -- run <template-id> --data '<json-string>'");
-  console.log("  npm run cli -- admin-add --template '<json-string>'");
-  console.log("  npm run cli -- admin-edit <template-id> --template '<json-string>'");
-  console.log("  npm run cli -- admin-remove <template-id> [--version <n>]");
-  console.log("  npm run cli -- admin-patch <template-id> --patch '<json-string>'");
-  console.log("  npm run cli -- admin-list [--all]");
-  console.log("  npm run cli -- policy-check --prompt \"<text>\"");
-  process.exit(1);
+  program
+    .name('prompt-cli')
+    .description('CLI for prompt templating and policy checking')
+    .version('0.1.0')
+    .showHelpAfterError()
+    .showSuggestionAfterError();
+
+  program.command('list')
+    .description('Show a list of current templates')
+    .action(cmdList);
+
+  program.command('info')
+    .description('Show details about a template')
+    .argument('<template-id>', 'template id')
+    .action((id) => cmdInfo(id));
+
+  program.command('run')
+    .description('Render a template with given variables')
+    .argument('<template-id>', 'template id')
+    .requiredOption('--data <json-string>', 'variables json string')
+    .action((id, options) => cmdRun(id, options.data));
+
+
+  // console.log("Usage:");
+  // console.log("  npm run cli -- list");
+  // console.log("  npm run cli -- info <template-id>"); 
+  // console.log("  npm run cli -- run <template-id> --data '<json-string>'");
+  // console.log("  npm run cli -- admin-add --template '<json-string>'");
+  // console.log("  npm run cli -- admin-edit <template-id> --template '<json-string>'");
+  // console.log("  npm run cli -- admin-remove <template-id> [--version <n>]");
+  // console.log("  npm run cli -- admin-patch <template-id> --patch '<json-string>'");
+  // console.log("  npm run cli -- admin-list [--all]");
+  // console.log("  npm run cli -- policy-check --prompt \"<text>\"");
+  // process.exit(1);
+
+  program.parse();
 }
 
 main().catch((err) => {
