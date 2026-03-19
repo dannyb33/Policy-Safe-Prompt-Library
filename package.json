@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/dannyb33/Policy-Safe-Prompt-Library#readme",
   "dependencies": {
+    "commander": "^14.0.3",
     "express": "^5.2.1"
   },
   "devDependencies": {
