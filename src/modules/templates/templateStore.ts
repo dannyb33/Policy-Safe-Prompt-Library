@@ -1,9 +1,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { PromptTemplate } from "../../core/types.js";
+
+
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
+
 const templatesPath = path.resolve(
-  process.cwd(),
-  "src/modules/templates/templates.json"
+  dirname,
+  "../templates/templates.json"
 );
 
 export async function loadAllTemplates(): Promise<PromptTemplate[]> {

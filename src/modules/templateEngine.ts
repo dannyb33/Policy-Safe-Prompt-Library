@@ -40,6 +40,11 @@ export class JsonTemplateEngine {
         if (typeof val !== "number" || Number.isNaN(val)) {
           errors.push(`Variable "${v.name}": expected number, got ${typeof val}`);
         }
+      }
+      else if (v.type === "boolean") {
+        if (typeof val !== "boolean") {
+          errors.push(`Variable "${v.name}": expected boolean, got ${typeof val}`);
+        }
       } 
       else if (v.type === "enum") {
         if (typeof val !== "string") {
