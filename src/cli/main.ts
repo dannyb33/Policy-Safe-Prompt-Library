@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 import { addTemplate, updateTemplate, removeTemplate, patchTemplate } from "../modules/templates/adminTemplateService.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
@@ -12,7 +14,7 @@ async function main() {
   const program = new Command();
 
   program
-    .name('cli')
+    .name('policy-cli')
     .description('CLI for prompt templating and policy checking')
     .version('0.1.0')
     .showHelpAfterError()
