@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 import { addTemplate, updateTemplate, removeTemplate, patchTemplate } from "../modules/templates/adminTemplateService.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
@@ -6,7 +7,6 @@ import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 import { Command, program } from "commander";
 import { cmdAdminAdd, cmdAdminEdit, cmdAdminList, cmdAdminPatch, cmdAdminRemove, cmdInfo, cmdList, cmdPolicyCheck, cmdRun } from "./commands.js";
-
 
 async function main() {
   const program = new Command();
@@ -135,7 +135,8 @@ async function main() {
         await cmdPolicyCheck(options.prompt)
       });
 
-  program.parse();
+  await program.parseAsync();
+  process.exit(0);
 }
 
 main().catch((err) => {
