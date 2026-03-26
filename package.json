@@ -23,11 +23,14 @@
   "homepage": "https://github.com/dannyb33/Policy-Safe-Prompt-Library#readme",
   "dependencies": {
     "commander": "^14.0.3",
-    "express": "^5.2.1"
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.3",
+    "cross-env": "^10.1.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
