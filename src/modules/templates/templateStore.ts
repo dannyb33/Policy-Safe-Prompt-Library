@@ -1,5 +1,16 @@
 import { getTemplatesCollection } from "../db.js";
 import type { PromptTemplate } from "../../core/types.js";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
+
+const templatesPath = path.resolve(
+  dirname,
+  "../templates/templates.json"
+);
 
 export async function loadAllTemplates(): Promise<PromptTemplate[]> {
   // Loads all templates from MongoDB Atlas

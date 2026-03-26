@@ -1,4 +1,3 @@
-
 export type CacheStats = {
   hits: number; // number of times a cache entry was successfully retrieved
   misses: number; // number of times a cache entry was not found

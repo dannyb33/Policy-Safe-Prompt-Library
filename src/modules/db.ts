@@ -2,9 +2,13 @@
 import { MongoClient, Db, Collection } from "mongodb";
 import type { PromptTemplate } from "../core/types.js";
 
-const MONGODB_URI = process.env.MONGODB_URI ?? "mongodb+srv://team1:policy@policy-cli.ura7x3u.mongodb.net/";
-const MONGODB_DB = process.env.MONGODB_DB ?? "policy_safe_prompts";
-const TEMPLATES_COLLECTION = "templates";
+const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB = process.env.MONGODB_DB;
+const TEMPLATES_COLLECTION = process.env.TEMPLATES_COLLECTION || "templates";
+
+if (!MONGODB_URI) throw new Error("MONGODB_URI is not set in environment variables (.env file)");
+if (!MONGODB_DB) throw new Error("MONGODB_DB is not set in environment variables (.env file)");
+
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -12,9 +16,9 @@ let db: Db | null = null;
 export async function connectDb(): Promise<Db> {
   if (db && client) return db;
 
-  client = new MongoClient(MONGODB_URI);
+  client = new MongoClient(MONGODB_URI!);
   await client.connect();
-  db = client.db(MONGODB_DB);
+  db = client.db(MONGODB_DB!);
 
   return db;
 }

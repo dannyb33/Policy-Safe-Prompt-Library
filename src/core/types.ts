@@ -1,4 +1,4 @@
-export type VariableType = "string" | "number" | "enum";
+export type VariableType = "string" | "number" | "boolean" | "enum";
 
 export interface VariableSchema {
   name: string;
