@@ -1,0 +1,20 @@
+{
+  "id": "demo_file_import",
+  "description": "Template imported from file",
+  "content": "Generate a short greeting for {{name}} in {{language}}.",
+  "variables": [
+    {
+      "name": "name",
+      "type": "string",
+      "description": "Person name",
+      "required": true
+    },
+    {
+      "name": "language",
+      "type": "enum",
+      "description": "Language of the greeting",
+      "required": true,
+      "options": ["English", "Spanish", "French"]
+    }
+  ]
+}

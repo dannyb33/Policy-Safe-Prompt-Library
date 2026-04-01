@@ -72,14 +72,28 @@ export async function cmdAdminEdit(id: string, t: PromptTemplate) {
   console.log(`> [OK] Template '${id}' updated.`);
 }
 
-export async function cmdAdminRemove(id: string) {
-  await removeTemplate(id);
-  console.log(`> [OK] Template '${id}' removed.`);
+export async function cmdAdminRemove(id: string, version?: number) {
+  await removeTemplate(id, version);
+  const suffix = version ? `@${version}` : "";
+  console.log(`> [OK] Template '${id}${suffix}' removed.`);
 }
 
 export async function cmdAdminPatch(id: string, patch: Record<string, unknown>) {
   const saved = await patchTemplate(id, patch);
   console.log(`> [OK] Template '${id}' patched. New version: ${saved.version ?? 1}`);
+}
+
+export async function cmdAdminImport(payload: PromptTemplate | PromptTemplate[]) {
+  const list = Array.isArray(payload) ? payload : [payload];
+
+  if (list.length === 0) {
+    throw new Error("Import file contained an empty templates array");
+  }
+
+  for (const t of list) {
+    await addTemplate(t);
+    console.log(`> [OK] Imported template '${t.id}'.`);
+  }
 }
 
 export async function cmdAdminList(all: boolean) {

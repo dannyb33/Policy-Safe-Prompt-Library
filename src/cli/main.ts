@@ -1,13 +1,56 @@
 #!/usr/bin/env node
 
-import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
-import { addTemplate, updateTemplate, removeTemplate, patchTemplate } from "../modules/templates/adminTemplateService.js";
-import { JsonTemplateEngine } from "../modules/templateEngine.js";
-import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
-import { checkPolicies } from "../modules/policies/policyChecker.js";
+import fs from "node:fs/promises";
 import type { PromptTemplate } from "../core/types.js";
-import { Command, program } from "commander";
-import { cmdAdminAdd, cmdAdminEdit, cmdAdminList, cmdAdminPatch, cmdAdminRemove, cmdInfo, cmdList, cmdPolicyCheck, cmdRun } from "./commands.js";
+import { Command } from "commander";
+import {
+  cmdAdminAdd,
+  cmdAdminEdit,
+  cmdAdminImport,
+  cmdAdminList,
+  cmdAdminPatch,
+  cmdAdminRemove,
+  cmdInfo,
+  cmdList,
+  cmdPolicyCheck,
+  cmdRun,
+} from "./commands.js";
+
+async function parseJsonInput<T>(
+  command: Command,
+  options: Record<string, unknown>,
+  config: { inlineKey: string; fileKey: string; label: string }
+): Promise<T> {
+  const inlineValue = options[config.inlineKey];
+  const fileValue = options[config.fileKey];
+
+  if (inlineValue && fileValue) {
+    command.error(`[ERROR] Use either --${config.inlineKey} or --${config.fileKey}, not both.`);
+  }
+  if (!inlineValue && !fileValue) {
+    command.error(`[ERROR] Missing --${config.inlineKey} or --${config.fileKey}.`);
+  }
+
+  let raw: string;
+  if (fileValue) {
+    try {
+      raw = await fs.readFile(String(fileValue), "utf-8");
+    } catch (err) {
+      command.error(`[ERROR] Cannot read file: ${String(fileValue)}`);
+      process.exit(1);
+    }
+  } else {
+    raw = String(inlineValue);
+  }
+
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    const source = fileValue ? `file ${String(fileValue)}` : `--${config.inlineKey}`;
+    command.error(`[ERROR] ${config.label} JSON is invalid from ${source}`);
+    process.exit(1);
+  }
+}
 
 
 async function main() {
@@ -50,17 +93,14 @@ async function main() {
 
   program.command('admin-add')
     .description('Add a template from a JSON string')
-    .requiredOption('--template <json-string>', 'template JSON string')
+    .option('--template <json-string>', 'template JSON string')
+    .option('--file <path>', 'template JSON file')
     .action(async (options, command) => {
-      if (!options.data) command.error("[ERROR] Missing --template '<json-string>'");
-
-      let t: PromptTemplate;
-      try {
-        t = JSON.parse(options.data);
-      } catch {
-        command.error("[ERROR] --template is not valid JSON");
-        process.exit(1);
-      }
+      const t = await parseJsonInput<PromptTemplate>(command, options, {
+        inlineKey: "template",
+        fileKey: "file",
+        label: "Template",
+      });
 
       await cmdAdminAdd(t);
     });
@@ -68,55 +108,63 @@ async function main() {
   program.command('admin-edit')
     .description('Edit a template from an id given a new JSON string')
     .argument('<template-id>', 'id of template to edit')
-    .requiredOption('--template <json-string>', 'new template JSON string')
+    .option('--template <json-string>', 'new template JSON string')
+    .option('--file <path>', 'template JSON file')
     .action(async (str, options, command) => {
       if (!str) command.error("[ERROR] missing <template-id>");
-      if (!options.data) command.error("[ERROR] Missing --template '<json-string>'");
-
-      let t: PromptTemplate;
-      try {
-        t = JSON.parse(options.data);
-      } catch {
-        command.error("[ERROR] --template is not valid JSON");
-        process.exit(1);
-      }
+      const t = await parseJsonInput<PromptTemplate>(command, options, {
+        inlineKey: "template",
+        fileKey: "file",
+        label: "Template",
+      });
 
       await cmdAdminEdit(str, t);
     });
 
   program.command('admin-remove')
     .description('Remove a template given an id and an optional version number')
-    .argument('<template-id>', 'id of template to remove')
+    .argument('[template-id]', 'id of template to remove')
     .option('--version <n>', 'version of template to remove')
+    .option('--file <path>', 'JSON file containing { "id": "...", "version"?: n }')
     .action(async (str, options, command) => {
-      if (!str) command.error("[ERROR] missing <template-id>");
+      let id = str;
+      let version = options.version ? Number(options.version) : undefined;
 
-      const version = options.version ? Number(options.version) : undefined;
-      if (version) {
+      if (options.file) {
+        const payload = await parseJsonInput<{ id: string; version?: number }>(command, options, {
+          inlineKey: "template",
+          fileKey: "file",
+          label: "Remove",
+        });
+
+        id = payload.id;
+        version = payload.version;
+      }
+
+      if (!id) command.error("[ERROR] missing <template-id> or --file");
+
+      if (version !== undefined) {
         const vInt = Number(version);
         if (!Number.isInteger(vInt) || vInt <= 0) {
           command.error("[ERROR] --version must be a positive integer");
         }
       }
 
-      await cmdAdminRemove(str);
+      await cmdAdminRemove(id, version);
     });
 
   program.command('admin-patch')
     .description('Patch a template given an id and an optional version number')
     .argument('<template-id>', 'id of template to remove')
-    .requiredOption('--patch <json-string>', 'JSON string of values to patch')
+    .option('--patch <json-string>', 'JSON string of values to patch')
+    .option('--file <path>', 'patch JSON file')
     .action(async (str, options, command) => {
       if (!str) command.error("[ERROR] missing <template-id>");
-      if (!options.patch) command.error("[ERROR] missing --patch <json-string>")
-
-      let patch: Record<string, unknown>;
-      try {
-        patch = JSON.parse(options.data);
-      } catch {
-        command.error("[ERROR] --patch <json-string> is an invalid JSON");
-        process.exit(1);
-      }
+      const patch = await parseJsonInput<Record<string, unknown>>(command, options, {
+        inlineKey: "patch",
+        fileKey: "file",
+        label: "Patch",
+      });
 
       await cmdAdminPatch(str, patch);
     });
@@ -126,6 +174,19 @@ async function main() {
       .option('--all', 'List all versions')
       .action(async (options) => {
         await cmdAdminList(options.all);
+      });
+
+    program.command('admin-import')
+      .description('Import one or more templates from a JSON file')
+      .requiredOption('--file <path>', 'JSON file containing a template or array of templates')
+      .action(async (options, command) => {
+        const payload = await parseJsonInput<PromptTemplate | PromptTemplate[]>(command, options, {
+          inlineKey: "template",
+          fileKey: "file",
+          label: "Template",
+        });
+
+        await cmdAdminImport(payload);
       });
 
     program.command('policy-check')
