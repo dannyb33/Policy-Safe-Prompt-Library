@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 import { addTemplate, updateTemplate, removeTemplate, patchTemplate } from "../modules/templates/adminTemplateService.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
@@ -8,7 +9,6 @@ import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 import { Command, program } from "commander";
 import { cmdAdminAdd, cmdAdminEdit, cmdAdminList, cmdAdminPatch, cmdAdminRemove, cmdInfo, cmdList, cmdPolicyCheck, cmdRun } from "./commands.js";
-
 
 async function main() {
   const program = new Command();
@@ -22,18 +22,18 @@ async function main() {
 
   program.command('list')
     .description('Show a list of current templates')
-    .action(cmdList);
+    .action(await cmdList);
 
   program.command('info')
     .description('Show details about a template')
     .argument('<template-id>', 'template id')
-    .action((id) => cmdInfo(id));
+    .action(async (id) => await cmdInfo(id));
 
   program.command('run')
     .description('Render a template with given variables')
     .argument('<template-id>', 'template id')
     .option('--data <json-string>', 'variables json string')
-    .action((id, options, command) => {
+    .action(async (id, options, command) => {
       if (!id) command.error("[ERROR] Missing template-id");
       if (!options.data) command.error("[ERROR] Missing --data <json-string>");
 
@@ -45,7 +45,7 @@ async function main() {
         process.exit(1);
       }
 
-      cmdRun(id, inputs);
+      await cmdRun(id, inputs);
     });
 
   program.command('admin-add')
@@ -137,7 +137,8 @@ async function main() {
         await cmdPolicyCheck(options.prompt)
       });
 
-  program.parse();
+  await program.parseAsync();
+  process.exit(0);
 }
 
 main().catch((err) => {
