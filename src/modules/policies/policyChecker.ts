@@ -4,20 +4,25 @@ export type PolicyCheckSummary = {
   passed: boolean; // all rules passed 
   results: PolicyCheckResult[]; // result of each rule check
   blockedReasons: string[]; // reasons 
+  warnings: string[]; // messages for why prompt failed or was flagged(warning)
   details: string[]; // details, maybe we can change it to be more structured later
 };
 
 export function checkPolicies(promptText: string, rules: PolicyRule[]): PolicyCheckSummary {
   const results = rules.map((rule) => rule.check(promptText)); // check all rules and collect results
   const failed = results.filter((r) => !r.passed);//slect only the ones that failed
+  const blockedFailed = failed.filter((r) => r.severity === "block");
+  const warnedFailed  = failed.filter((r) => r.severity === "warn");
 
-  const blockedReasons = failed.map((r) => r.message ?? `${r.name} failed`);// create blocked reasons, use message if available, otherwise default to rule name
+  const blockedReasons = blockedFailed.map((r) => r.message ?? `${r.name} failed`);
+  const warnings = warnedFailed.map((r)  => r.message ?? `${r.name} triggered`);
   const details = failed.flatMap((r) => r.details ?? []);  // get details from failed rules, if any, and flatten them into a single array
 
   return {
-    passed: failed.length === 0, // if there are no failed rules, then the prompt passed all checks
+    passed: blockedFailed.length === 0, // if there are no failed rules, then the prompt passed all checks
     results, // include results of all rules, both passed and failed, for transparency
     blockedReasons, // reasons for blocking, extracted from failed rules
+    warnings, // messages for warnings, extracted from failed rules with severity "warn"
     details, // additional details from failed rules
   };
 }

@@ -1,5 +1,12 @@
 import { createProhibitedWordsRule, DEFAULT_PROHIBITED_WORDS } from "./prohibitedWordsRule.js";
 import type { PolicyRule } from "./policyTypes.js";
+import { createAuthorityHijackRule } from "./authorityhijackrule.js";
+import { createCodeInjectionRule } from "./codeinjectionrule.js";
+import { createFakeCompletionRule } from "./fakecompletionrule.js";
+import { createDataExfiltrationRule } from "./dataexfiltrationrule.js";
+import { createReformattingRule } from "./reformattingrule.js";
+import { createSocialManipulationRule } from "./socialmaniplulationrule.js";
+import { createTemplateInjectionRule } from "./templateinjectionrule.js";
 
 export function getDefaultPolicyRules(): PolicyRule[] {
   return [
@@ -7,6 +14,12 @@ export function getDefaultPolicyRules(): PolicyRule[] {
       caseSensitive: false, // 
       matchWholeWord: false,
     }),
+    createAuthorityHijackRule(),
+    createCodeInjectionRule(),
+    createFakeCompletionRule(),
+    createDataExfiltrationRule(),
+    createTemplateInjectionRule(),
+    createReformattingRule(),
+    createSocialManipulationRule(),
   ];
 }
-// this function returns an array of default policy rules that can be used to check prompts. Currently, it includes a single rule that checks for prohibited words, using a predefined list and options for case sensitivity and whole word matching.
