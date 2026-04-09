@@ -37,10 +37,11 @@ export function createProhibitedWordsRule(
 
   return { // we are gona return different things 
     name: "ProhibitedWordsRule",
-    check(promptText: string): PolicyCheckResult {
+    severity: "block",check(promptText: string): PolicyCheckResult {
       if (!regex) {
         return {
           name: "ProhibitedWordsRule",
+          severity: "block",
           passed: true,
           message: "No prohibited words configured",
         };
@@ -50,6 +51,7 @@ export function createProhibitedWordsRule(
       if (matches.length === 0) { // no match
         return {
           name: "ProhibitedWordsRule",
+          severity: "block",
           passed: true,
           message: "No prohibited words detected",
         };
@@ -58,6 +60,7 @@ export function createProhibitedWordsRule(
       const uniqueMatches = Array.from(new Set(matches)); // elimnates duplicates
       return {
         name: "ProhibitedWordsRule",
+        severity: "block",
         passed: false,
         message: "Prompt contains prohibited words",
         details: uniqueMatches.map((m) => `Matched: "${m}"`),
