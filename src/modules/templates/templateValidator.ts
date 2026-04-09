@@ -50,7 +50,7 @@ export function validateTemplateDefinition(t: PromptTemplate): TemplateValidatio
     }
     seen.add(v.name); // we add the variable name to the set to track duplicates
 
-    if (!v.type || !["string", "number", "enum"].includes(v.type)) {
+    if (!v.type || !["string", "number", "enum", "boolean"].includes(v.type)) {
       errors.push(`Variable '${v.name}' has invalid type '${String(v.type)}'`);
     }
 

@@ -1,5 +1,5 @@
 import { createProhibitedWordsRule, DEFAULT_PROHIBITED_WORDS } from "./prohibitedWordsRule.js";
-import type { PolicyRule } from "./policyTypes.js";
+import type { PolicyRule } from "../../core/types.js";
 
 export function getDefaultPolicyRules(): PolicyRule[] {
   return [

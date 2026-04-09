@@ -1,14 +1,8 @@
-import type { PolicyRule, PolicyCheckResult } from "./policyTypes.js";
+import type { PolicyCheckInput, PolicyCheckSummary } from "../../core/types.js";
+import type { PolicyRule, PolicyCheckResult } from "../../core/types.js";
 
-export type PolicyCheckSummary = {
-  passed: boolean; // all rules passed 
-  results: PolicyCheckResult[]; // result of each rule check
-  blockedReasons: string[]; // reasons 
-  details: string[]; // details, maybe we can change it to be more structured later
-};
-
-export function checkPolicies(promptText: string, rules: PolicyRule[]): PolicyCheckSummary {
-  const results = rules.map((rule) => rule.check(promptText)); // check all rules and collect results
+export function checkPolicies(prompt: PolicyCheckInput, rules: PolicyRule[]): PolicyCheckSummary {
+  const results = rules.map((rule) => rule.check(prompt.prompt)); // check all rules and collect results
   const failed = results.filter((r) => !r.passed);//slect only the ones that failed
 
   const blockedReasons = failed.map((r) => r.message ?? `${r.name} failed`);// create blocked reasons, use message if available, otherwise default to rule name

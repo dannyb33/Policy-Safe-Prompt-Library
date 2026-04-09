@@ -1,4 +1,4 @@
-import type { PolicyRule, PolicyCheckResult } from "./policyTypes.js";
+import type { PolicyRule, PolicyCheckResult } from "../../core/types.js";
 
 export type ProhibitedWordsOptions = {
   caseSensitive?: boolean;
