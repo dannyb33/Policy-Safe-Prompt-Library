@@ -11,7 +11,7 @@ app.use(express.json());
 app.use("/api/templates", templateRouter)
 app.use("/api/policies", policyRouter)
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 

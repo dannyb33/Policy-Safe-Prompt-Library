@@ -11,7 +11,7 @@ policyRouter.post("/check", (req, res) => {
   try {
     const prompt = req.body as PolicyCheckInput;
 
-    const summary = checkPolicies(prompt, getDefaultPolicyRules());
+    const summary = checkPolicies(prompt.prompt, getDefaultPolicyRules());
 
     return res.status(summary.passed ? 200 : 400).json(summary);
 

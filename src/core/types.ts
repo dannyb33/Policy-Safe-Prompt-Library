@@ -22,20 +22,19 @@ export type RenderOutput = {
   usedPlaceholders: string[];
   fromCache: boolean;
 };
-
-export interface PolicyCheckInput {
-  prompt: string;
-}
+export type RuleSeverity = "block" | "warn";
 
 export type PolicyCheckResult = {
   name: string;
   passed: boolean;
+  severity: RuleSeverity;
   message?: string; // explain
   details?: string[];
 };
 
 export interface PolicyRule {
   name: string;
+  severity: RuleSeverity;
   check(promptText: string): PolicyCheckResult;
 }
 
@@ -43,5 +42,11 @@ export type PolicyCheckSummary = {
   passed: boolean; // all rules passed 
   results: PolicyCheckResult[]; // result of each rule check
   blockedReasons: string[]; // reasons 
+  warnings: string[]; // messages for why prompt failed or was flagged(warning)
   details: string[]; // details, maybe we can change it to be more structured later
 };
+
+export interface PolicyCheckInput {
+  prompt: string;
+}
+
