@@ -1,13 +1,7 @@
-import type { PromptTemplate } from "../core/types.js";
+import type { PromptTemplate, RenderOutput } from "../core/types.js";
 import { loadTemplateById } from "./templates/templateStore.js";
 import { renderTemplate } from "./templates/templateRenderer.js";
 import { buildCacheKey, getCached, setCached } from "./renderCache.js";
-
-export type RenderOutput = {
-  output: string;
-  usedPlaceholders: string[];
-  fromCache: boolean;
-};
 
 export class JsonTemplateEngine {
   async getTemplate(id: string): Promise<PromptTemplate> { //load the template by its id, if not found throw an error

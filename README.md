@@ -17,7 +17,10 @@ Build the project:
 -     npm run build
 
 Link the CLI (for global use):
--      npm link
+-     npm link
+
+Run the API in a seperate terminal (for template use):
+-     npm run dev:server
 
 **Usage**
 

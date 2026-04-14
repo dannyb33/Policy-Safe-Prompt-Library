@@ -1,12 +1,5 @@
-import type { PolicyRule, PolicyCheckResult } from "./policyTypes.js";
-
-export type PolicyCheckSummary = {
-  passed: boolean; // all rules passed 
-  results: PolicyCheckResult[]; // result of each rule check
-  blockedReasons: string[]; // reasons 
-  warnings: string[]; // messages for why prompt failed or was flagged(warning)
-  details: string[]; // details, maybe we can change it to be more structured later
-};
+import type { PolicyCheckInput, PolicyCheckSummary } from "../../core/types.js";
+import type { PolicyRule, PolicyCheckResult } from "../../core/types.js";
 
 export function checkPolicies(promptText: string, rules: PolicyRule[]): PolicyCheckSummary {
   const results = rules.map((rule) => rule.check(promptText)); // check all rules and collect results

@@ -1,4 +1,4 @@
-import type { PolicyRule, PolicyCheckResult } from "./policyTypes.js";
+import type { PolicyRule, PolicyCheckResult } from "../../core/types.js";
 
 const MANIPULATION_PATTERNS: Array<{ label: string; regex: RegExp }> = [
   { label: "phishing email request", 

@@ -1,13 +1,37 @@
-import type { PromptTemplate } from "../core/types.js";
+import type { PolicyCheckInput, PolicyCheckSummary, PromptTemplate, RenderOutput } from "../core/types.js";
 import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
 import { addTemplate, patchTemplate, removeTemplate, updateTemplate } from "../modules/templates/adminTemplateService.js";
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 
+const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${process.env.PORT}`;
+
+export async function cmdList() {
+  const response = await fetch(`${API_BASE_URL}/api/templates`);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(`Failed to fetch template list: ${error.error}`);
+    process.exit(1);
+  }
+
+  const templates = await response.json() as [PromptTemplate];
+
+  templates.forEach((t, i) => {
+    console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
+  });
+}
+
 export async function cmdInfo(id: string) {
-  const engine = new JsonTemplateEngine();
-  const template = await engine.getTemplate(id); // throws if not found
+  const response = await fetch(`${API_BASE_URL}/api/templates/${id}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(`Failed to fetch template info: ${error.error}`);
+    process.exit(1);
+  }
+
+  const template = await response.json() as PromptTemplate;
 
   console.log(`> ---------------------------------------------------`);
   console.log(`> Template ID  : ${template.id}`);
@@ -31,80 +55,69 @@ export async function cmdInfo(id: string) {
 }
 
 export async function cmdRun(id: string, inputs: Record<string, unknown>) {
-  const engine = new JsonTemplateEngine();
+  const response = await fetch(`${API_BASE_URL}/api/templates/execute/${id}`, {
+    method: 'POST',
+    body: JSON.stringify(inputs),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+  });
 
-  console.log(`> [INFO] Loading template '${id}'...`);
-  const template = await engine.getTemplate(id); // throws if not found
-
-  console.log(`> [INFO] Validating inputs...`);
-  const validationErrors = engine.validateInputs(template, inputs);
-  if (validationErrors.length > 0) {
-    console.error("> [ERROR] Validation failed:");
-    validationErrors.forEach((e) => console.error(`>   • ${e}`));
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(`Failed to execute:\n${error.errors}`);
     process.exit(1);
   }
-  console.log(`> [INFO] Inputs OK`);
 
-  const { output, usedPlaceholders, fromCache } = engine.render(template, inputs);
+  const renderedObject = await response.json() as RenderOutput;
 
-  console.log(`> [INFO] Placeholders filled: ${usedPlaceholders.map((p) => `{{${p}}}`).join(", ")}`);
-  console.log(`> [INFO] Cache: ${fromCache ? "HIT ⚡" : "MISS (stored for next time)"}`);
+  console.log(`> [INFO] Placeholders filled: ${renderedObject.usedPlaceholders.map((p) => `{{${p}}}`).join(", ")}`);
+  console.log(`> [INFO] Cache: ${renderedObject.fromCache ? "HIT ⚡" : "MISS (stored for next time)"}`);
   console.log(`> ---------------------------------------------------`);
   console.log(`> [OUTPUT PROMPT]`);
-  console.log(`> "${output}"`);
+  console.log(`> "${renderedObject.output}"`);
   console.log(`> ---------------------------------------------------`);
 }
 
-export async function cmdList() {
-  const templates = await loadLatestTemplates();
-  templates.forEach((t, i) => {
-    console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
+// Unnecessary for now...
+
+// export async function cmdAdminPatch(id: string, patch: Record<string, unknown>) {
+//   const saved = await patchTemplate(id, patch);
+//   console.log(`> [OK] Template '${id}' patched. New version: ${saved.version ?? 1}`);
+// }
+
+// export async function cmdAdminList(all: boolean) {
+
+//   if (all) {   // list all versions instead of only the latest ones
+//     const templates = await loadAllTemplates(); 
+//     const sorted = sortAllByIdAndVersion(templates);
+
+//     console.log("> Admin Templates (ALL versions):");
+//     sorted.forEach((t, i) => {
+//       console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
+//     });
+//     return;
+//   }
+
+//   const latest = await loadLatestTemplates();
+//   console.log("> Admin Templates (LATEST only):");
+//   latest.forEach((t, i) => {
+//     console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
+//   });
+// }
+
+export async function cmdPolicyCheck(prompt: PolicyCheckInput) {
+  const response = await fetch(`${API_BASE_URL}/api/policies/check`, {
+    method: 'POST',
+    body: JSON.stringify(prompt),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
   });
-}
 
-export async function cmdAdminAdd(t: PromptTemplate) {
-  await addTemplate(t);
-  console.log(`> [OK] Template '${t.id}' added.`);
-}
-
-export async function cmdAdminEdit(id: string, t: PromptTemplate) {
-  await updateTemplate(id, t);
-  console.log(`> [OK] Template '${id}' updated.`);
-}
-
-export async function cmdAdminRemove(id: string) {
-  await removeTemplate(id);
-  console.log(`> [OK] Template '${id}' removed.`);
-}
-
-export async function cmdAdminPatch(id: string, patch: Record<string, unknown>) {
-  const saved = await patchTemplate(id, patch);
-  console.log(`> [OK] Template '${id}' patched. New version: ${saved.version ?? 1}`);
-}
-
-export async function cmdAdminList(all: boolean) {
-
-  if (all) {   // list all versions instead of only the latest ones
-    const templates = await loadAllTemplates(); 
-    const sorted = sortAllByIdAndVersion(templates);
-
-    console.log("> Admin Templates (ALL versions):");
-    sorted.forEach((t, i) => {
-      console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
-    });
-    return;
-  }
-
-  const latest = await loadLatestTemplates();
-  console.log("> Admin Templates (LATEST only):");
-  latest.forEach((t, i) => {
-    console.log(`> ${i + 1}. ${t.id}@${t.version ?? 1}  [${t.description}]`);
-  });
-}
-
-export async function cmdPolicyCheck(prompt: string) {
-  const rules = getDefaultPolicyRules();
-  const summary = checkPolicies(prompt, rules);
+  const summary = await response.json() as PolicyCheckSummary;
 
   console.log("> [INFO] Running policy checks...");
   summary.results.forEach((result) => {

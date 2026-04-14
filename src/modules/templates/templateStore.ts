@@ -27,7 +27,8 @@ export async function loadTemplateById(id: string): Promise<PromptTemplate | nul
 export async function saveAllTemplates(templates: PromptTemplate[]): Promise<void> { // we pass an array of PromptTemplate objects to save
   // Overwrites all templates in MongoDB Atlas with the provided array
   const collection = await getTemplatesCollection();
-  await collection.deleteMany({});
+  var out = await collection.deleteMany({});
+  console.log(out);
   if (templates.length > 0) {
     await collection.insertMany(templates);
   }
