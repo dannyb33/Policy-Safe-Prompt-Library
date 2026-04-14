@@ -30,7 +30,7 @@ export function checkProhibitedWords(text: string, adminId: string): string[]{
     const prohibited = adminProhibitedWords[adminId] || [];
 
     for (let i = 0; i < prohibited.length; i++) {
-        const word = prohibited[i];
+        const word = prohibited[i]!;
         // Check if the text contains this word (case insensitive)
         if (text.toLowerCase().includes(word.toLowerCase())) {
             foundWords.push(word);
@@ -43,6 +43,11 @@ export function checkProhibitedWords(text: string, adminId: string): string[]{
 export function deleteProhibitedWords(adminID: string, delete_word: string): void {
    
     const adminList = adminProhibitedWords[adminID];
+
+    // Check if admin has a list
+    if (!adminList) {
+        throw new Error(`No prohibited words list found for admin ${adminID}`);
+    }
 
     //iterate thorugh list
     let found = false;
@@ -62,7 +67,7 @@ export function deleteProhibitedWords(adminID: string, delete_word: string): voi
     const tempList: string[] = []
     for (let i = 0; i < adminList.length; i++){
         if (adminList[i] !== delete_word){
-            tempList.push(adminList[i]);
+            tempList.push(adminList[i]!);
             break;
         }
     }
