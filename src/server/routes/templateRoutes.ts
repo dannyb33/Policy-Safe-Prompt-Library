@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { loadLatestTemplates, loadTemplateById } from '../../modules/templates/templateStore.js';
+import { loadAllTemplates, loadLatestTemplates, loadTemplateById } from '../../modules/templates/templateStore.js';
 import { JsonTemplateEngine } from '../../modules/templateEngine.js';
 import type { PromptTemplate } from '../../core/types.js';
-import { addTemplate, removeTemplate, updateTemplate } from '../../modules/templates/adminTemplateService.js';
+import { addTemplate, removeTemplate, removeTemplateAllVersions, updateTemplate } from '../../modules/templates/adminTemplateService.js';
 
 const templateRouter = Router();
 
@@ -20,6 +20,26 @@ const engine = new JsonTemplateEngine();
 templateRouter.get("/", async (req, res) => {
   try {
     var out = await loadLatestTemplates()
+    res.status(200).json(out)
+  } catch(e: any) {
+    res.status(400).json({error: e.message});
+  }
+});
+
+/**
+ * @swagger
+ * /api/templates/all:
+ *   get:
+ *     summary: Get all versions of templates
+ *     responses:
+ *       200:
+ *         description: List of templates
+ *       400:
+ *         description: Error loading templates
+ */
+templateRouter.get("/all", async (req, res) => {
+  try {
+    var out = await loadAllTemplates()
     res.status(200).json(out)
   } catch(e: any) {
     res.status(400).json({error: e.message});
@@ -176,7 +196,7 @@ templateRouter.put("/update/:id", async (req, res) => {
  */
 templateRouter.delete("/delete/:id", async (req, res) => {
   try {
-    await removeTemplate(req.params.id);
+    await removeTemplateAllVersions(req.params.id);
     return res.status(200).json({message: `Template ${req.params.id} deleted`});
   } catch (e: any) {
     return res.status(400).json({error: e.message});

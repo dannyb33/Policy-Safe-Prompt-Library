@@ -77,6 +77,21 @@ export async function removeTemplate(id: string, version?: number): Promise<void
   await saveAllTemplates(after);
 }
 
+export async function removeTemplateAllVersions(id: string): Promise<void> {
+  const templates = await loadAllTemplates(); // load all templates
+  const sameId = templates.filter((t) => t.id === id); // look for template with the same id
+
+  if (sameId.length === 0) throw new Error(`Template not found: ${id}`); // check if it exist
+
+  const after = templates.filter((t) => !(t.id === id )); // remove the template with the same id and version
+
+  if (after.length === templates.length) { // same length means that we did not remove any template, so we throw an error
+    throw new Error(`Template '${id}' not removed.`);
+  }
+
+  await saveAllTemplates(after);
+}
+
 export async function patchTemplate(
   id: string,
   patch: Partial<Omit<PromptTemplate, "id" | "version" | "createdAt">> // are optionals, but we cant patch the id 

@@ -7,6 +7,8 @@ import policyRouter from "./routes/policyRoutes.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
+const PORT = process.env.PORT || 4000;
+
 const app = express();
 
 app.use(express.json());
@@ -28,7 +30,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 4000}`,
+        url: `http://localhost:${PORT}`,
       },
     ],
   },
@@ -38,8 +40,6 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () =>
   console.log(`Server running at http://localhost:${PORT}`)
