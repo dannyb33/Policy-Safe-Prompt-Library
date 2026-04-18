@@ -1,4 +1,5 @@
 import type { PolicyCheckInput, PolicyCheckSummary, PromptTemplate, RenderOutput } from "../core/types.js";
+import fs from "node:fs/promises";
 import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
@@ -6,6 +7,50 @@ import { addTemplate, patchTemplate, removeTemplate, updateTemplate } from "../m
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 
 const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${process.env.PORT}`;
+
+type BatchOperation =
+  | { action: "add"; template: PromptTemplate }
+  | { action: "update"; id: string; template: PromptTemplate }
+  | { action: "delete"; id: string; version: number }
+  | { action: "deleteAll"; id: string };
+
+type BatchFile = BatchOperation[] | { operations: BatchOperation[] };
+
+function normalizeBatchFile(payload: BatchFile): BatchOperation[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray((payload as { operations: BatchOperation[] }).operations)) {
+    return (payload as { operations: BatchOperation[] }).operations;
+  }
+  throw new Error("Invalid batch file format: expected array or { operations: [...] }");
+}
+
+async function requestJson<T>(method: string, path: string, body?: unknown): Promise<T | undefined> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: body === undefined ? null : JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Request failed (${response.status})`;
+    try {
+      const error = await response.json();
+      errorMessage = error?.error || error?.errors || errorMessage;
+    } catch {
+      // ignore JSON parse errors
+    }
+    throw new Error(errorMessage);
+  }
+
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function cmdList() {
   const response = await fetch(`${API_BASE_URL}/api/templates`);
@@ -138,4 +183,59 @@ export async function cmdPolicyCheck(prompt: PolicyCheckInput) {
     summary.details.forEach((detail) => console.error(`>   • ${detail}`));
   }
   process.exit(1);
+}
+
+export async function cmdBatch(filePath: string, options?: { continueOnError?: boolean }) {
+  const raw = await fs.readFile(filePath, "utf-8");
+  const payload = JSON.parse(raw) as BatchFile;
+  const operations = normalizeBatchFile(payload);
+
+  if (operations.length === 0) {
+    console.log("> [INFO] Batch file contains no operations.");
+    return;
+  }
+
+  let successCount = 0;
+  const errors: string[] = [];
+
+  for (const [index, op] of operations.entries()) {
+    try {
+      switch (op.action) {
+        case "add":
+          await requestJson("PUT", "/api/templates/add", op.template);
+          console.log(`> [OK] add ${op.template.id}`);
+          break;
+        case "update":
+          await requestJson("PUT", `/api/templates/update/${op.id}`, op.template);
+          console.log(`> [OK] update ${op.id}`);
+          break;
+        case "delete":
+          await requestJson("DELETE", `/api/templates/delete/${op.id}/${op.version}`);
+          console.log(`> [OK] delete ${op.id}@${op.version}`);
+          break;
+        case "deleteAll":
+          await requestJson("DELETE", `/api/templates/delete/${op.id}`);
+          console.log(`> [OK] deleteAll ${op.id}`);
+          break;
+        default:
+          throw new Error(`Unknown action '${(op as { action: string }).action}'`);
+      }
+      successCount++;
+    } catch (e: any) {
+      const message = `[${index + 1}/${operations.length}] ${e.message || e}`;
+      errors.push(message);
+      console.error(`> [ERROR] ${message}`);
+      if (!options?.continueOnError) {
+        break;
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error(`> [DONE] Completed with ${errors.length} error(s).`);
+    if (!options?.continueOnError) process.exit(1);
+    return;
+  }
+
+  console.log(`> [DONE] Completed ${successCount} operation(s).`);
 }

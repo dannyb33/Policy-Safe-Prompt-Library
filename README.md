@@ -32,8 +32,7 @@ Show template info:
 
 Render a template:
 -     policy-cli run <template-id> --data '{"var1":"value1"}'
-
-Check a prompt against policies:
+ -     policy-cli run <template-id> --json-file ./path/to/vars.jsonCheck a prompt against policies:
 -     policy-cli policy-check --prompt "your prompt here"
 
 Admin commands: (add, edit, remove templates)
