@@ -1,22 +1,69 @@
 import { Router } from 'express'
-import { loadLatestTemplates, loadTemplateById } from '../../modules/templates/templateStore.js';
+import { loadAllTemplates, loadLatestTemplates, loadTemplateById } from '../../modules/templates/templateStore.js';
 import { JsonTemplateEngine } from '../../modules/templateEngine.js';
 import type { PromptTemplate } from '../../core/types.js';
-import { addTemplate, removeTemplate, updateTemplate } from '../../modules/templates/adminTemplateService.js';
+import { addTemplate, removeTemplate, removeTemplateAllVersions, updateTemplate } from '../../modules/templates/adminTemplateService.js';
 
 const templateRouter = Router();
 
 const engine = new JsonTemplateEngine();
 
+/**
+ * @swagger
+ * /api/templates:
+ *   get:
+ *     summary: Get latest templates
+ *     responses:
+ *       200:
+ *         description: List of templates
+ */
 templateRouter.get("/", async (req, res) => {
   try {
-      var out = await loadLatestTemplates()
-      res.status(200).json(out)
+    var out = await loadLatestTemplates()
+    res.status(200).json(out)
   } catch(e: any) {
     res.status(400).json({error: e.message});
   }
 });
 
+/**
+ * @swagger
+ * /api/templates/all:
+ *   get:
+ *     summary: Get all versions of templates
+ *     responses:
+ *       200:
+ *         description: List of templates
+ *       400:
+ *         description: Error loading templates
+ */
+templateRouter.get("/all", async (req, res) => {
+  try {
+    var out = await loadAllTemplates()
+    res.status(200).json(out)
+  } catch(e: any) {
+    res.status(400).json({error: e.message});
+  }
+});
+
+/**
+ * @swagger
+ * /api/templates/{id}:
+ *   get:
+ *     summary: Get template by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "welcome-email"
+ *     responses:
+ *       200:
+ *         description: Template found
+ *       400:
+ *         description: Error fetching template
+ */
 templateRouter.get("/:id", async (req, res) => {
   try {
     var out = await engine.getTemplate(req.params.id);
@@ -26,21 +73,42 @@ templateRouter.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/templates/execute/{id}:
+ *   post:
+ *     summary: Execute a template with inputs
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             additionalProperties: true
+ *             example:
+ *               name: "John"
+ *               product: "Policy CLI"
+ *     responses:
+ *       200:
+ *         description: Rendered template output
+ *       400:
+ *         description: Validation or execution error
+ */
 templateRouter.post("/execute/:id", async (req, res) => {
   try {
-    console.log("start");
     var template = await engine.getTemplate(req.params.id);
-
-    console.log(req.body);
 
     var errors = await engine.validateInputs(template, req.body);
     if (errors.length > 0) {
       const errorString = errors.map(e => `${e}`).join("\n");
-      console.log(errorString);
       return res.status(400).json({ errors: errorString });
     }
-
-    console.log("validated");
 
     var out = await engine.render(template, req.body);
 
@@ -50,6 +118,24 @@ templateRouter.post("/execute/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/templates/add:
+ *   put:
+ *     summary: Add a new template
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               id: "welcome-email"
+ *               content: "Hello {{name}}"
+ *     responses:
+ *       200:
+ *         description: Template added
+ */
 templateRouter.put("/add", async (req, res) => {
   let t: PromptTemplate;
   try {
@@ -61,6 +147,27 @@ templateRouter.put("/add", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/templates/update/{id}:
+ *   put:
+ *     summary: Update an existing template
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Template updated
+ */
 templateRouter.put("/update/:id", async (req, res) => {
   let t: PromptTemplate;
   try {
@@ -72,23 +179,58 @@ templateRouter.put("/update/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/templates/delete/{id}:
+ *   delete:
+ *     summary: Delete a template (all versions)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Template deleted
+ */
 templateRouter.delete("/delete/:id", async (req, res) => {
-    try {
-      await removeTemplate(req.params.id);
-      return res.status(200).json({message: `Template ${req.params.id} deleted`});
-    } catch (e: any) {
-      return res.status(400).json({error: e.message});
-    }
+  try {
+    await removeTemplateAllVersions(req.params.id);
+    return res.status(200).json({message: `Template ${req.params.id} deleted`});
+  } catch (e: any) {
+    return res.status(400).json({error: e.message});
+  }
 });
 
+/**
+ * @swagger
+ * /api/templates/delete/{id}/{version}:
+ *   delete:
+ *     summary: Delete a specific version of a template
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: version
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Template version deleted
+ */
 templateRouter.delete("/delete/:id/:version", async (req, res) => {
-    try {
-
-      await removeTemplate(req.params.id, parseInt(req.params.version));
-      return res.status(200).json({message: `Template ${req.params.id} deleted`});
-    } catch (e: any) {
-      return res.status(400).json({error: e.message});
-    }
+  try {
+    await removeTemplate(req.params.id, parseInt(req.params.version));
+    return res.status(200).json({message: `Template ${req.params.id} deleted`});
+  } catch (e: any) {
+    return res.status(400).json({error: e.message});
+  }
 });
 
 export default templateRouter;
