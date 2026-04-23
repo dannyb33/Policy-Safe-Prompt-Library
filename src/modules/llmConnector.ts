@@ -7,7 +7,7 @@
 import axios from 'axios';
 
 const LLM_CONFIG = {
-    url: "http://localhost:11434/api/chat",
+    url: "http://ollama:11434/api/chat",
     model: "llama3.2"
 };
 
@@ -28,7 +28,10 @@ async function sendToLLM(prompt: string): Promise<string> {
 }  
 
 export async function testLLMConnection(): Promise<boolean> {
+    console.log("LLM");
+
     try {
+        console.log(LLM_CONFIG.url)
         console.log("> Testing LLM connection...");
         const response = await sendToLLM("Say 'Connection successful' in exactly 5 words.");
         console.log(`> SUCCESS! LLM responded: "${response}"`);

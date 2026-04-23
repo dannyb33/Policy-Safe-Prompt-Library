@@ -3,11 +3,16 @@ services:
     image: ollama/ollama:latest
     volumes:
       - ollama_data:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
+    expose:
+      - "11434"
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
 
   api:
     build:
       context: .
-      dockerfile: src/server/Dockerfile 
+      dockerfile: src/server/Dockerfile
     ports:
       - "4000:4000"
     environment:

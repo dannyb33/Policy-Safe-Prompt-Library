@@ -8,7 +8,7 @@ import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 import { Command, program } from "commander";
-import { cmdInfo, cmdList, cmdPolicyCheck, cmdRun, cmdRunWithLLM } from "./commands.js";
+import { cmdInfo, cmdList, cmdPolicyCheck, cmdRun, cmdRunWithLLM, testLLM } from "./commands.js";
 import { styleText } from 'node:util';
 import { sendToLLM, testLLMConnection } from "../modules/llmConnector.js";
 
@@ -94,12 +94,7 @@ async function main() {
     program.command('test-llm')
     .description('Test connectivity to the LLM')
     .action(async () => {
-      const success = await testLLMConnection();
-      if (!success) {
-        console.error("> LLM connection test failed. Please ensure your LLM is running and at the configured URL.");
-        process.exit(1);
-      }
-      else console.log("> LLM connection test passed!");
+      await testLLM();
     });
 
   await program.parseAsync();
