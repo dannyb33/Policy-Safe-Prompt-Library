@@ -1,4 +1,5 @@
 import type { PolicyCheckInput, PolicyCheckSummary, PromptTemplate, RenderOutput } from "../core/types.js";
+import { sendToLLM } from "../modules/llmConnector.js";
 import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
@@ -80,6 +81,22 @@ export async function cmdRun(id: string, inputs: Record<string, unknown>) {
   console.log(`> ---------------------------------------------------`);
 }
 
+export async function cmdRunWithLLM(id: string, inputs: Record<string, unknown>) {
+  const engine = new JsonTemplateEngine();
+  const template = await engine.getTemplate(id);
+  const validationErrors = engine.validateInputs(template, inputs);
+
+  if (validationErrors.length > 0) {
+    validationErrors.forEach((e) => console.error(`> ${e}`));
+    process.exit(1);
+  }
+
+  const renderedPrompt = engine.render(template, inputs);
+  console.log(`> Rendered prompt:\n${renderedPrompt.output}`);
+
+  const llmResponse = await sendToLLM(renderedPrompt.output);
+  console.log(`> LLM Response:\n${llmResponse}`);
+}
 // Unnecessary for now...
 
 // export async function cmdAdminPatch(id: string, patch: Record<string, unknown>) {
