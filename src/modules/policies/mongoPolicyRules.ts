@@ -1,10 +1,17 @@
 import type { PolicyCheckResult, PolicyRule, RuleSeverity } from "../../core/types.js";
 import { getPoliciesCollection } from "../db.js";
 
-type StoredPattern = {
+// { label, regex, flags }
+type FlatPattern = {
   label: string;
   regex: string;
   flags?: string;
+};
+
+// { category, regexes: [{ regex, flags }] }
+type NestedPattern = {
+  category: string;
+  regexes: Array<{ regex: string; flags?: string }>;
 };
 
 type StoredPolicyRule = {
@@ -12,25 +19,40 @@ type StoredPolicyRule = {
   name: string;
   severity: RuleSeverity;
   description?: string;
-  patterns: StoredPattern[];
+  patterns: Array<FlatPattern | NestedPattern>;
   messages?: {
     on_pass?: string;
     on_fail?: string;
   };
 };
 
-function compilePattern(pattern: StoredPattern): RegExp | null {
-  try {
-    return new RegExp(pattern.regex, pattern.flags ?? "gi");
-  } catch {
-    return null;
+type CompiledPattern = { label: string; regex: RegExp };
+
+// normalize patterns from atlas 
+function normalisePatterns(patterns: Array<FlatPattern | NestedPattern>): CompiledPattern[] {
+  const result: CompiledPattern[] = [];
+
+  for (const p of patterns) {
+    if ("regexes" in p) {
+      // nested format
+      for (const r of p.regexes) {
+        try {
+          result.push({ label: p.category, regex: new RegExp(r.regex, r.flags ?? "gi") });
+        } catch { /* skip invalid regex */ }
+      }
+    } else {
+      // flat format
+      try {
+        result.push({ label: p.label, regex: new RegExp(p.regex, p.flags ?? "gi") });
+      } catch { /* skip invalid regex */ }
+    }
   }
+
+  return result;
 }
 
 function createRuleFromStoredDocument(doc: StoredPolicyRule): PolicyRule {
-  const compiledPatterns = doc.patterns
-    .map((pattern) => ({ label: pattern.label, regex: compilePattern(pattern) }))
-    .filter((item): item is { label: string; regex: RegExp } => item.regex !== null);
+  const compiledPatterns = normalisePatterns(doc.patterns);
 
   return {
     name: doc.name,
