@@ -8,7 +8,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import llmRouter from './routes/llmRoutes.js';
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT || 4000);
 
 const app = express();
 
@@ -43,6 +43,6 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.listen(PORT, () =>
+app.listen(PORT, "0.0.0.0", () =>
   console.log(`Server running at http://localhost:${PORT}`)
 );

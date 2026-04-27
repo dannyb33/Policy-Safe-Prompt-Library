@@ -3,7 +3,7 @@ import { MongoClient, Db, Collection } from "mongodb";
 import type { PromptTemplate } from "../core/types.js";
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB;
+const MONGODB_DB = process.env.MONGODB_DB || "policy_safe_prompts";
 const TEMPLATES_COLLECTION = process.env.TEMPLATES_COLLECTION || "templates";
 
 if (!MONGODB_URI) throw new Error("MONGODB_URI is not set in environment variables (.env file)");
