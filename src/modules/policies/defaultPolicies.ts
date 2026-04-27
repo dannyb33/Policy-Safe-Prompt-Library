@@ -1,5 +1,4 @@
 import { createProhibitedWordsRule, DEFAULT_PROHIBITED_WORDS } from "./prohibitedWordsRule.js";
-import type { PolicyRule } from "../../core/types.js";
 import { createAuthorityHijackRule } from "./authorityhijackrule.js";
 import { createCodeInjectionRule } from "./codeinjectionrule.js";
 import { createFakeCompletionRule } from "./fakecompletionrule.js";
@@ -7,6 +6,9 @@ import { createDataExfiltrationRule } from "./dataexfiltrationrule.js";
 import { createReformattingRule } from "./reformattingrule.js";
 import { createSocialManipulationRule } from "./socialmanipulationrule.js";
 import { createTemplateInjectionRule } from "./templateinjectionrule.js";
+import { createPiiRegexRule } from "./piiregexrule.js";
+import { createPiiLlmRule} from "./piillmrule.js";
+import type { PolicyRule } from "./policytypes.js";
 
 export function getDefaultPolicyRules(): PolicyRule[] {
   return [
@@ -19,6 +21,8 @@ export function getDefaultPolicyRules(): PolicyRule[] {
     createFakeCompletionRule(),
     createDataExfiltrationRule(),
     createTemplateInjectionRule(),
+    createPiiRegexRule(),
+    createPiiLlmRule(),
     createReformattingRule(),
     createSocialManipulationRule(),
   ];

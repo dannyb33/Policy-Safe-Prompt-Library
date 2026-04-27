@@ -1,8 +1,7 @@
 import { Router } from 'express'
-import { loadLatestTemplates, loadTemplateById } from '../../modules/templates/templateStore.js';
-import { JsonTemplateEngine } from '../../modules/templateEngine.js';
 import { getDefaultPolicyRules } from '../../modules/policies/defaultPolicies.js';
 import { checkPolicies } from '../../modules/policies/policyChecker.js';
+import { loadMongoPolicyRules } from '../../modules/policies/mongoPolicyRules.js';
 import type { PolicyCheckInput } from '../../core/types.js';
 
 const policyRouter = Router();
@@ -34,7 +33,20 @@ policyRouter.post("/check", (req, res) => {
   try {
     const prompt = req.body as PolicyCheckInput;
 
-    const summary = checkPolicies(prompt.prompt, getDefaultPolicyRules());
+    let rules = getDefaultPolicyRules();
+    let rulesSource = "local defaults";
+    try {
+      const mongoRules = await loadMongoPolicyRules();
+      if (mongoRules.length > 0) {
+        rules = mongoRules;
+        rulesSource = `MongoDB (${mongoRules.length} rules)`;
+      }
+    } catch (e: any) {
+      console.warn("[policy-check] MongoDB rules unavailable, using local defaults:", e.message);
+    }
+    console.log(`[policy-check] Rules source: ${rulesSource}`);
+
+    const summary = checkPolicies(prompt.prompt, rules);
 
     return res.status(summary.passed ? 200 : 400).json(summary);
 

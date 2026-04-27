@@ -8,8 +8,9 @@ import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 import { Command, program } from "commander";
-import { cmdInfo, cmdList, cmdPolicyCheck, cmdRun } from "./commands.js";
 import { styleText } from 'node:util';
+import { cmdInfo, cmdList, cmdPolicyCheck, cmdRun, cmdRunWithLLM } from "./commands.js";
+import { sendToLLM, testLLMConnection } from "../modules/llmConnector.js";
 
 async function main() {
   const program = new Command();
@@ -70,6 +71,36 @@ async function main() {
 
         await cmdPolicyCheck({prompt: options.prompt})
       });
+
+    program.command('run-llm')
+    .description('Render a template and send it to the LLM')
+    .argument('<template-id>', 'template id')
+    .option('--data <json-string>', 'variables json string')
+    .action(async (id, options, command) => {
+      // if (!id) command.error("[ERROR] Missing template-id");
+      if (!options.data) command.error("[ERROR] Missing --data <json-string>");
+
+      let inputs: Record<string, unknown>;
+      try {
+        inputs = JSON.parse(options.data);
+      } catch (e: any){
+        command.error(`[ERROR] ${e.message}`);
+        process.exit(1);
+      }
+
+      await cmdRunWithLLM(id, inputs);
+    });
+
+    program.command('test-llm')
+    .description('Test connectivity to the LLM')
+    .action(async () => {
+      const success = await testLLMConnection();
+      if (!success) {
+        console.error("> LLM connection test failed. Please ensure your LLM is running and at the configured URL.");
+        process.exit(1);
+      }
+      else console.log("> LLM connection test passed!");
+    });
 
   await program.parseAsync();
   process.exit(0);
