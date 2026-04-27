@@ -8,6 +8,7 @@ import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import type { PromptTemplate } from "../core/types.js";
 import { Command, program } from "commander";
+import { styleText } from 'node:util';
 import { cmdInfo, cmdList, cmdPolicyCheck, cmdRun, cmdRunWithLLM } from "./commands.js";
 import { sendToLLM, testLLMConnection } from "../modules/llmConnector.js";
 
@@ -16,10 +17,23 @@ async function main() {
 
   program
     .name('policy-cli')
-    .description('CLI for prompt templating and policy checking')
+    .description(`\n*************************************************\n
+* CLI for prompt templating and policy checking *\n
+*************************************************`)
+    .usage('[options] <input>')
     .version('0.1.0')
     .showHelpAfterError()
     .showSuggestionAfterError();
+
+  program.configureHelp({
+    styleTitle: (str) => styleText('bold', str),
+    styleCommandText: (str) => styleText('magenta', str),
+    styleCommandDescription: (str) => styleText('green', str),
+    styleDescriptionText: (str) => styleText('italic', str),
+    styleOptionText: (str) => styleText('yellow', str),
+    styleArgumentText: (str) => styleText('red', str),
+    styleSubcommandText: (str) => styleText('blue', str),
+  });
 
   program.command('list')
     .description('Show a list of current templates')

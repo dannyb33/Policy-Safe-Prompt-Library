@@ -6,7 +6,30 @@ import type { PolicyCheckInput } from '../../core/types.js';
 
 const policyRouter = Router();
 
-policyRouter.post("/check", async (req, res) => {
+/**
+ * @swagger
+ * /api/policies/check:
+ *   post:
+ *     summary: Run policy check
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 example: "Is this content safe?"
+ *     responses:
+ *       200:
+ *         description: Successful policy check summary
+ *       400:
+ *         description: Failed policy check summary
+ *       500:
+ *         description: Error in policy checking
+ */
+policyRouter.post("/check", (req, res) => {
   try {
     const prompt = req.body as PolicyCheckInput;
 
