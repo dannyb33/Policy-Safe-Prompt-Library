@@ -8,3 +8,4 @@ services:
       - "${PORT}:4000"
     environment:
       - MONGODB_URI=${MONGODB_URI}
+      - API_BASE_URL=https://policy-safe.discovery.cs.vt.edu

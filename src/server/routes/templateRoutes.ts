@@ -19,6 +19,8 @@ const engine = new JsonTemplateEngine();
  */
 templateRouter.get("/", async (req, res) => {
   try {
+    console.log("test");
+
     var out = await loadLatestTemplates()
     res.status(200).json(out)
   } catch(e: any) {
