@@ -1,6 +1,6 @@
 services:
   api:
-    image: container.cs.vt.edu/dannyb3/policy-safe-prompt-library:latest
+    image: container.cs.vt.edu/dannyb3/policy-safe-prompt-library:v2
     build:
       context: .
       dockerfile: src/server/Dockerfile

@@ -11,6 +11,7 @@ RUN npm install
 COPY . .
 
 RUN npm run build
+RUN mkdir -p dist/public && cp -r public/* dist/public/
 
 
 # =========================

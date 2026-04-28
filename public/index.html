@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Policy-Safe Prompt Library GUI</title>
+    <link rel="stylesheet" href="/gui/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel panel-header">
+        <h1>Policy-Safe Prompt Library</h1>
+      </section>
+
+      <section class="panel panel-list">
+        <div class="panel-title-row">
+          <h2>Templates</h2>
+          <button id="refresh-list" type="button">Refresh list</button>
+        </div>
+        <ul id="template-list" class="template-list"></ul>
+      </section>
+
+      <section class="panel panel-info">
+        <h2>Template Info</h2>
+        <p id="template-placeholder">Select a template to view details.</p>
+        <article id="template-info" class="template-info hidden"></article>
+      </section>
+    </main>
+
+    <script type="module" src="/gui/app.js"></script>
+  </body>
+</html>
