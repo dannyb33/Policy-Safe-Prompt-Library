@@ -29,7 +29,7 @@ const policyRouter = Router();
  *       500:
  *         description: Error in policy checking
  */
-policyRouter.post("/check", (req, res) => {
+policyRouter.post("/check", async (req, res) => {
   try {
     const prompt = req.body as PolicyCheckInput;
 
