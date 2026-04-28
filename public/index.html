@@ -25,6 +25,54 @@
         <p id="template-placeholder">Select a template to view details.</p>
         <article id="template-info" class="template-info hidden"></article>
       </section>
+
+      <section class="panel panel-run">
+        <h2>Run Template</h2>
+        <div class="run-form">
+          <label for="run-template-id">Template ID</label>
+          <input
+            id="run-template-id"
+            class="run-input"
+            type="text"
+            placeholder="ex: polite_reply"
+          />
+
+          <p id="run-fields-placeholder" class="run-helper">
+            Select a template to load its input fields.
+          </p>
+          <div id="run-fields" class="run-fields"></div>
+
+          <button id="run-template-btn" type="button">Run template + LLM</button>
+        </div>
+        <pre id="run-output" class="run-output hidden"></pre>
+      </section>
+
+      <section class="panel panel-policy">
+        <h2>Policy Check</h2>
+        <div class="policy-form">
+          <label for="policy-prompt">Prompt</label>
+          <textarea
+            id="policy-prompt"
+            class="policy-input"
+            rows="4"
+            placeholder="Enter a prompt to run policy checks..."
+          ></textarea>
+          <button id="run-policy-check" type="button">Run policy check</button>
+        </div>
+        <pre id="policy-output" class="policy-output hidden"></pre>
+      </section>
+
+      <section class="panel panel-api-link">
+        <p class="api-link-label">API Documentation</p>
+        <a
+          class="api-link"
+          href="https://policy-safe.discovery.cs.vt.edu/docs/#/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          https://policy-safe.discovery.cs.vt.edu/docs/#/
+        </a>
+      </section>
     </main>
 
     <script type="module" src="/gui/app.js"></script>
