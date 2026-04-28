@@ -1,14 +1,16 @@
-// download https://ollama.com/download 
-// then run ollama serve in terminal to start the server
-    // "ollama pull llama3.2"
-// you may also have to run npm install axios
-// then run  "policy-cli test-llm" to test the connection
-
 import axios from 'axios';
 
+const LLM_KEY = process.env.LLM_KEY;
+const LLM_URL = process.env.LLM_URL;
+
+if (!LLM_URL) throw new Error("LLM URL not set in environment variables (.env file)");
+if (!LLM_KEY) throw new Error("LLM Key not set in environment variables (.env file)");
+
+
 const LLM_CONFIG = {
-    url: "http://ollama:11434/api/chat",
-    model: "llama3.2"
+    url: LLM_URL + "/chat/completions",
+    model: "gpt-oss-120b",
+    key: LLM_KEY
 };
 
 async function sendToLLM(prompt: string): Promise<string> {
@@ -19,9 +21,16 @@ async function sendToLLM(prompt: string): Promise<string> {
                 model: LLM_CONFIG.model,
                 messages: [{ role: "user", content: prompt }],
                 stream: false,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${LLM_CONFIG.key}`,
+                    "Content-Type": "application/json",
+                },
             }
         );
-        return response.data.message.content;
+
+        return response.data.choices[0].message.content;
     } catch (error: any) {
         throw new Error(`LLM Error: ${error.message}`);
     }

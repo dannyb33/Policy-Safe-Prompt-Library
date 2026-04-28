@@ -14,18 +14,30 @@ let client: MongoClient | null = null;
 let db: Db | null = null;
 
 export async function connectDb(): Promise<Db> {
+  console.log("connecto");
+
   if (db && client) return db;
+
+  console.log("hasnt");
+  console.log(MONGODB_DB);
+  console.log(MONGODB_URI);
 
   client = new MongoClient(MONGODB_URI!);
   await client.connect();
   db = client.db(MONGODB_DB!);
 
+  console.log("connected");
+
   return db;
 }
 
 export async function getTemplatesCollection(): Promise<Collection<PromptTemplate>> {
+  console.log("coll");
+
   const database = await connectDb();
   const collection = database.collection<PromptTemplate>(TEMPLATES_COLLECTION);
+
+  console.log("after");
 
   await collection.createIndex({ id: 1, version: 1 }, { unique: true, background: true });
   await collection.createIndex({ id: 1, version: -1 }, { background: true });
