@@ -16,7 +16,7 @@ const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 const prod = process.env.NODE_ENV == "production";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const publicDir = path.join(__dirname, "../public");
+const publicDir = path.join(__dirname, "../server/public");
 
 const app = express();
 
@@ -29,10 +29,6 @@ app.use("/api/llm", llmRouter);
 app.use("/api/health", healthRouter);
 
 app.get('/', (req, res) => {
-  res.send('Policy-CLI Home Page: Access API at /docs');
-});
-
-app.get('/gui', (req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
