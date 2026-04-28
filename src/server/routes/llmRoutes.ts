@@ -4,6 +4,9 @@ import { JsonTemplateEngine } from '../../modules/templateEngine.js';
 import type { PromptTemplate } from '../../core/types.js';
 import { addTemplate, removeTemplate, removeTemplateAllVersions, updateTemplate } from '../../modules/templates/adminTemplateService.js';
 import { sendToLLM, testLLMConnection } from '../../modules/llmConnector.js';
+import { getDefaultPolicyRules } from '../../modules/policies/defaultPolicies.js';
+import { loadMongoPolicyRules } from '../../modules/policies/mongoPolicyRules.js';
+import { checkPolicies } from '../../modules/policies/policyChecker.js';
 
 const llmRouter = Router();
 
@@ -73,6 +76,23 @@ llmRouter.post("/run/:id", async (req, res) => {
     }
 
     var rendered = await engine.render(template, req.body);
+
+    let rules = getDefaultPolicyRules();
+    let rulesSource = "local defaults";
+    try {
+        const mongoRules = await loadMongoPolicyRules();
+        if (mongoRules.length > 0) {
+        rules = mongoRules;
+        rulesSource = `MongoDB (${mongoRules.length} rules)`;
+        }
+    } catch (e: any) {
+        console.warn("[policy-check] MongoDB rules unavailable, using local defaults:", e.message);
+    }
+    console.log(`[policy-check] Rules source: ${rulesSource}`);
+
+    const summary = checkPolicies(rendered.output, rules);
+
+    if (!summary.passed) throw new Error(summary.blockedReasons.join());
 
     const llmResponse = await sendToLLM(rendered.output);
 

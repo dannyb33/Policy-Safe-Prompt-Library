@@ -202,7 +202,7 @@ function renderRunResult(templateResult, llmResult, llmError = null) {
   lines.push("> ---------------------------------------------------");
 
   if (llmError) {
-    lines.push("> [LLM ERROR] Could not get response from LLM.");
+    lines.push("> [ERROR] Error in operation.");
     lines.push(`> ${llmError}`);
     lines.push("> ---------------------------------------------------");
     showRunOutput(lines.join("\n"), true);
