@@ -5,12 +5,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "cli": "tsx src/cli/main.ts",
     "dev:server": "tsx watch src/server/index.ts",
     "dev": "concurrently \"npm run dev:server\" \"npm run cli\"",
     "build": "tsc",
-    "start": "tsx src/server/index.ts"
+    "start": "tsx src/server/index.ts",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,8 @@
     "@types/swagger-ui-express": "^4.1.8",
     "cross-env": "^10.1.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
   },
   "bin": {
     "policy-cli": "dist/cli/main.js"
