@@ -3,7 +3,7 @@ import { MongoClient, Db, Collection } from "mongodb";
 import type { PromptTemplate } from "../core/types.js";
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB;
+const MONGODB_DB = process.env.MONGODB_DB || "policy_safe_prompts";
 const TEMPLATES_COLLECTION = process.env.TEMPLATES_COLLECTION || "templates";
 const RULES_COLLECTION     = process.env.RULES_COLLECTION     || "policy_rules";
 const DEMO_COLLECTION      = process.env.DEMO_COLLECTION      || "demo";

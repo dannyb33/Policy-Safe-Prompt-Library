@@ -9,7 +9,8 @@
     "cli": "tsx src/cli/main.ts",
     "dev:server": "tsx watch src/server/index.ts",
     "dev": "concurrently \"npm run dev:server\" \"npm run cli\"",
-    "build": "tsc && cp -r src/modules/templates/* dist/modules/templates"
+    "build": "tsc",
+    "start": "tsx src/server/index.ts"
   },
   "repository": {
     "type": "git",

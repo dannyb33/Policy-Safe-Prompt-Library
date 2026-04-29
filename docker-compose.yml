@@ -1,0 +1,11 @@
+services:
+  api:
+    image: container.cs.vt.edu/dannyb3/policy-safe-prompt-library:latest
+    build:
+      context: .
+      dockerfile: src/server/Dockerfile
+    ports:
+      - "${PORT}:4000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - API_BASE_URL=https://policy-safe.discovery.cs.vt.edu

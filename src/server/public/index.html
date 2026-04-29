@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Policy-Safe Prompt Library GUI</title>
+    <link rel="stylesheet" href="/gui/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel panel-header">
+        <h1>Policy-Safe Prompt Library</h1>
+      </section>
+
+      <section class="panel panel-list">
+        <div class="panel-title-row">
+          <h2>Templates</h2>
+          <button id="refresh-list" type="button">Refresh list</button>
+        </div>
+        <ul id="template-list" class="template-list"></ul>
+      </section>
+
+      <section class="panel panel-info">
+        <h2>Template Info</h2>
+        <p id="template-placeholder">Select a template to view details.</p>
+        <article id="template-info" class="template-info hidden"></article>
+      </section>
+
+      <section class="panel panel-run">
+        <h2>Run Template</h2>
+        <div class="run-form">
+          <label for="run-template-id">Template ID</label>
+          <input
+            id="run-template-id"
+            class="run-input"
+            type="text"
+            placeholder="ex: polite_reply"
+          />
+
+          <p id="run-fields-placeholder" class="run-helper">
+            Select a template to load its input fields.
+          </p>
+          <div id="run-fields" class="run-fields"></div>
+
+          <button id="run-template-btn" type="button">Run template + LLM</button>
+        </div>
+        <pre id="run-output" class="run-output hidden"></pre>
+      </section>
+
+      <section class="panel panel-policy">
+        <h2>Policy Check</h2>
+        <div class="policy-form">
+          <label for="policy-prompt">Prompt</label>
+          <textarea
+            id="policy-prompt"
+            class="policy-input"
+            rows="4"
+            placeholder="Enter a prompt to run policy checks..."
+          ></textarea>
+          <button id="run-policy-check" type="button">Run policy check</button>
+        </div>
+        <pre id="policy-output" class="policy-output hidden"></pre>
+      </section>
+
+      <section class="panel panel-api-link">
+        <p class="api-link-label">API Documentation</p>
+        <a
+          class="api-link"
+          href="https://policy-safe.discovery.cs.vt.edu/docs/#/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          https://policy-safe.discovery.cs.vt.edu/docs/#/
+        </a>
+      </section>
+    </main>
+
+    <script type="module" src="/gui/app.js"></script>
+  </body>
+</html>

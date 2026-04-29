@@ -1,15 +1,17 @@
 import type { PolicyCheckInput, PolicyCheckSummary, PromptTemplate, RenderOutput } from "../core/types.js";
-import { sendToLLM } from "../modules/llmConnector.js";
+import { sendToLLM, testLLMConnection } from "../modules/llmConnector.js";
 import { getDefaultPolicyRules } from "../modules/policies/defaultPolicies.js";
 import { checkPolicies } from "../modules/policies/policyChecker.js";
 import { JsonTemplateEngine } from "../modules/templateEngine.js";
 import { addTemplate, patchTemplate, removeTemplate, updateTemplate } from "../modules/templates/adminTemplateService.js";
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 
-const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${process.env.PORT}`;
+const API_BASE_URL = process.env.API_BASE_URL ?
+  process.env.API_BASE_URL + "/api"
+  : `http://localhost:${process.env.PORT}/api`;
 
 export async function cmdList() {
-  const response = await fetch(`${API_BASE_URL}/api/templates`);
+  const response = await fetch(`${API_BASE_URL}/templates`);
   if (!response.ok) {
     const error = await response.json();
     console.error(`Failed to fetch template list: ${error.error}`);
@@ -24,7 +26,7 @@ export async function cmdList() {
 }
 
 export async function cmdInfo(id: string) {
-  const response = await fetch(`${API_BASE_URL}/api/templates/${id}`);
+  const response = await fetch(`${API_BASE_URL}/templates/${id}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -56,7 +58,7 @@ export async function cmdInfo(id: string) {
 }
 
 export async function cmdRun(id: string, inputs: Record<string, unknown>) {
-  const response = await fetch(`${API_BASE_URL}/api/templates/execute/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/templates/execute/${id}`, {
     method: 'POST',
     body: JSON.stringify(inputs),
     headers: {
@@ -82,21 +84,41 @@ export async function cmdRun(id: string, inputs: Record<string, unknown>) {
 }
 
 export async function cmdRunWithLLM(id: string, inputs: Record<string, unknown>) {
-  const engine = new JsonTemplateEngine();
-  const template = await engine.getTemplate(id);
-  const validationErrors = engine.validateInputs(template, inputs);
+  try {  
+    const response = await fetch(`${API_BASE_URL}/llm/run/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(inputs),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+    });
 
-  if (validationErrors.length > 0) {
-    validationErrors.forEach((e) => console.error(`> ${e}`));
+    if (!response.ok) {
+      console.error("> LLM connection test failed. Please ensure your LLM is running and at the configured URL.");
+      process.exit(1);
+    }
+
+    const output = await response.json();
+
+    console.log("> LLM Response: ");
+    console.log(output.response);
+  } catch (e: any) {
+    console.error(e.message);
+  }
+}
+
+export async function testLLM() {
+  const response = await fetch(`${API_BASE_URL}/llm/test`);
+
+  if (!response.ok) {
+    console.error("> LLM connection test failed. Please ensure your LLM is running and at the configured URL.");
     process.exit(1);
   }
-
-  const renderedPrompt = engine.render(template, inputs);
-  console.log(`> Rendered prompt:\n${renderedPrompt.output}`);
-
-  const llmResponse = await sendToLLM(renderedPrompt.output);
-  console.log(`> LLM Response:\n${llmResponse}`);
+  
+  console.log("> LLM connection test passed!");
 }
+
 // Unnecessary for now...
 
 // export async function cmdAdminPatch(id: string, patch: Record<string, unknown>) {
@@ -125,7 +147,7 @@ export async function cmdRunWithLLM(id: string, inputs: Record<string, unknown>)
 // }
 
 export async function cmdPolicyCheck(prompt: PolicyCheckInput) {
-  const response = await fetch(`${API_BASE_URL}/api/policies/check`, {
+  const response = await fetch(`${API_BASE_URL}/policies/check`, {
     method: 'POST',
     body: JSON.stringify(prompt),
     headers: {
@@ -141,6 +163,9 @@ export async function cmdPolicyCheck(prompt: PolicyCheckInput) {
     console.log(`>   - ${result.name}: ${result.passed ? "PASSED" : "FAILED"}`);
     if (!result.passed && result.message) {
       console.log(`>     Reason: ${result.message}`);
+      if (result.severity == "warn"){
+        console.log(`>     Warning: Non-blocking policy rule`);
+      }
     }
   });
 
