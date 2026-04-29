@@ -163,6 +163,9 @@ export async function cmdPolicyCheck(prompt: PolicyCheckInput) {
     console.log(`>   - ${result.name}: ${result.passed ? "PASSED" : "FAILED"}`);
     if (!result.passed && result.message) {
       console.log(`>     Reason: ${result.message}`);
+      if (result.severity == "warn"){
+        console.log(`>     Warning: Non-blocking policy rule`);
+      }
     }
   });
 

@@ -64,7 +64,7 @@ function createRuleFromStoredDocument(doc: StoredPolicyRule): PolicyRule {
         pattern.regex.lastIndex = 0;
         const match = pattern.regex.exec(promptText);
         if (match) {
-          details.push(`${pattern.label}: "${match[0].slice(0, 120).trim()}"`);
+          details.push(`"${match[0].slice(0, 120).trim()}"`);
         }
       }
 
