@@ -43,6 +43,26 @@ npm run dev:server
 
 The CLI depends on the API being available. By default, it uses `http://localhost:4000/api` unless `API_BASE_URL` is set in `.env`.
 
+**Run With Docker**
+
+Use Docker if you want to run the application in a containerized environment instead of starting the server manually.
+
+Make sure Docker is running and your `.env` file is configured before starting.
+
+Start the application with Docker:
+
+```bash
+docker compose up --build
+```
+
+Stop the application:
+
+```bash
+docker compose down
+```
+
+The API will be exposed on the port defined by `PORT` in `.env`.
+
 **CLI Commands**
 
 Show all available commands:
