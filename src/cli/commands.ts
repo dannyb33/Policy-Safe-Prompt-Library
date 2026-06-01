@@ -6,9 +6,17 @@ import { JsonTemplateEngine } from "../modules/templateEngine.js";
 import { addTemplate, patchTemplate, removeTemplate, updateTemplate } from "../modules/templates/adminTemplateService.js";
 import { loadAllTemplates, loadLatestTemplates, sortAllByIdAndVersion } from "../modules/templates/templateStore.js";
 
-const API_BASE_URL = process.env.API_BASE_URL ?
-  process.env.API_BASE_URL + "/api"
-  : `http://localhost:${process.env.PORT}/api`;
+const prod = process.env.NODE_ENV == "production";
+
+let API_BASE_URL: string;
+
+if (prod == true) {
+  API_BASE_URL = "https://policy-safe.discovery.cs.vt.edu/api"
+} else {
+  API_BASE_URL = process.env.API_BASE_URL ?
+    process.env.API_BASE_URL + "/api"
+    : `http://localhost:${process.env.PORT}/api`;
+}
 
 export async function cmdList() {
   const response = await fetch(`${API_BASE_URL}/templates`);

@@ -1,6 +1,6 @@
 **Policy-Safe-Prompt-Library**
 
-This project provides a system for managing, rendering, and enforcing safety policies on prompt templates. The system supports both a CLI and server mode, with MongoDB as the backend for template storage.
+This project provides a system for managing, rendering, and enforcing safety policies on prompt templates. This system is hosted as a public API and can be accessed by a web-deployed GUI or a locally-run CLI. The API can also be run locally.
 
 Features:
 - Prompt Template Management: Add, edit, list, and remove prompt templates.
@@ -13,16 +13,25 @@ Features:
 
 - MongoDB Integration: All templates and policy rules are stored in MongoDB.
 
+<br>
+
+**Web Deployment**
+
+GUI: https://policy-safe.discovery.cs.vt.edu/
+
+API Documentation: https://policy-safe.discovery.cs.vt.edu/docs
+
+<br>
+
+**CLI Usage**
+
 Build the project:
 -     npm run build
 
 Link the CLI (for global use):
 -     npm link
 
-Run the API in a seperate terminal (for template use):
--     npm run dev:server
-
-**Usage**
+*CLI Guide*
 
 List templates:
 -     policy-cli list
@@ -36,7 +45,9 @@ Render a template:
 Check a prompt against policies:
 -     policy-cli policy-check --prompt "your prompt here"
 
-Admin commands: (add, edit, remove templates)
--     policy-cli admin-add --file path/to/template.json
--     policy-cli admin-edit <template-id> --file path/to/template.json
--     policy-cli admin-remove <template-id>
+<br>
+
+**Local API Usage**
+
+Run the API:
+-     npm run dev:server

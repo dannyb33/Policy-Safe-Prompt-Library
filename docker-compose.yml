@@ -8,4 +8,6 @@ services:
       - "${PORT}:4000"
     environment:
       - MONGODB_URI=${MONGODB_URI}
+      - LLM_URL=${LLM_URL}
+      - LLM_KEY=${LLM_KEY}
       - API_BASE_URL=https://policy-safe.discovery.cs.vt.edu

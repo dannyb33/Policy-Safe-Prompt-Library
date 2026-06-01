@@ -57,7 +57,7 @@ templateRouter.get("/all", async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         example: "welcome-email"
+ *         example: "polite_reply"
  *     responses:
  *       200:
  *         description: Template found
@@ -130,8 +130,14 @@ templateRouter.post("/execute/:id", async (req, res) => {
  *           schema:
  *             type: object
  *             example:
- *               id: "welcome-email"
- *               content: "Hello {{name}}"
+ *               id: "example_template"
+ *               description: "Write the reverse of a word"
+ *               content: "Write the reverse of the following word as a simple string: {{example_word}}"
+ *               variables:
+ *                 - name: "example_word"
+ *                   type: "string"
+ *                   description: "Word to reverse"
+ *                   required: true
  *     responses:
  *       200:
  *         description: Template added
@@ -158,12 +164,22 @@ templateRouter.put("/add", async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         example: "example_template"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             example:
+ *               id: "example_template"
+ *               description: "Write the word in all caps"
+ *               content: "Write the following word in all caps as a simple string: {{example_word}}"
+ *               variables:
+ *                 - name: "example_word"
+ *                   type: "string"
+ *                   description: "Word to capitalize"
+ *                   required: true
  *     responses:
  *       200:
  *         description: Template updated
@@ -190,6 +206,7 @@ templateRouter.put("/update/:id", async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         example: "example_template"
  *     responses:
  *       200:
  *         description: Template deleted
